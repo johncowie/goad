@@ -205,7 +205,7 @@
    ;;(wrap-error-handling (constantly (r/response "ERROR!")))
    ))
 
-(def app-port (or (env :port) 3000))
+(def app-port (or (Integer. (env :port)) 3000))
 (def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))
 
 (def mongo (.start (db/new-mongo-db mongo-uri)))
