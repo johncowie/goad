@@ -12,7 +12,7 @@
                  [enlive "1.1.5"]
                  [traversy "0.2.0"]
                  [bidi "1.10.5"]
-                 ]
+                 [johncowie/middleware "0.1.1"]]
   :profiles {:dev {:dependencies [[midje "1.6.3"]]
                    :plugins [[lein-ring "0.8.11"]
                              [lein-midje "3.1.1"]]}}
