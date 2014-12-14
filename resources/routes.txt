@@ -1,0 +1,7 @@
+GET  /                  index
+GET  /login             login-form
+POST /login             login
+GET  /logout            logout
+GET  /callback          twitter-callback
+POST /add-goal          add-goal
+POST /add-event         add-event
