@@ -208,9 +208,7 @@
 (def app-port (or (env :port) 3000))
 (def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))
 
-(def mongo
-  ;(.start (db/new-mongo-db mongo-uri))
-  (db/new-test-db))
+(def mongo (.start (db/new-mongo-db mongo-uri)))
 (def clock (clock/new-joda-clock))
 (def twauth #_(oauth/new-twitter-oauth)
   (oauth/new-stub-twitter-oauth {:name "John" :id 123 :screen_name "johncowie"}))
