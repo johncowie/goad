@@ -210,8 +210,9 @@
 
 (def mongo (.start (db/new-mongo-db mongo-uri)))
 (def clock (clock/new-joda-clock))
-(def twauth #_(oauth/new-twitter-oauth)
-  (oauth/new-stub-twitter-oauth {:name "John" :id 123 :screen_name "johncowie"}))
+(def twauth (oauth/new-twitter-oauth (env :twitter-key) (env :twitter-secret))
+  ;(oauth/new-stub-twitter-oauth {:name "John" :id 123 :screen_name "johncowie"})
+  )
 
 (def app (make-app (scenic-handler routes (route-handlers mongo clock twauth) not-found-handler)))
 
