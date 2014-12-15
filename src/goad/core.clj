@@ -63,6 +63,11 @@
 
 (enlive/defsnippet login-snippet "public/templates/bootstrap.html" [:#login] [])
 
+(def time-units {1 "day" 7 "week" 28 "month"})
+
+(defn goal-unit-test [{:keys [target unit time-unit]}]
+  (format "%s %s per %s" target unit (time-units time-unit)))
+
 (enlive/defsnippet habits-snippet "public/templates/bootstrap.html" [:#habits]
   [goals]
   [:.goal-row]
@@ -70,10 +75,9 @@
                     [:.goal-row :.hidden-goal-id] (enlive/set-attr :value (:goal-id goal))
                     [:.goal-row :.goal-done-so-far] (enlive/content (str (:total-done goal)))
                     [:.goal-row :.goal-name] (enlive/content (:name goal))
-                    [:.goal-row :.goal-target] (enlive/content (str (:target goal)))
+                    [:.goal-row :.goal-target] (enlive/content (goal-unit-test goal))
                     [:.goal-row :.progress-percentage] (enlive/content (str (:progress goal)))
-                    [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))
-                    ))
+                    [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))))
 
 (enlive/defsnippet goal-form-snippet "public/templates/bootstrap.html" [:#goal-form]
   [])
