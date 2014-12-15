@@ -35,9 +35,7 @@
 
 (defn calculate-required [goal clock]
   (let [required-per-milli (required-per-milli goal)
-        millis-elapsed (- (clock/now clock) (:timestamp goal))
-        ;done-per-milli (/ (:total-done goal) (- (now clock) (:timestamp goal)))
-        ]
+        millis-elapsed (- (clock/now clock) (:timestamp goal))]
     (assoc goal :required (* millis-elapsed required-per-milli))))
 
 (defn calculate-total-done [goal events]
@@ -73,7 +71,9 @@
                     [:.goal-row :.goal-done-so-far] (enlive/content (str (:total-done goal)))
                     [:.goal-row :.goal-name] (enlive/content (:name goal))
                     [:.goal-row :.goal-target] (enlive/content (str (:target goal)))
-                    [:.goal-row :.progress-percentage] (enlive/content (str (:progress goal)))))
+                    [:.goal-row :.progress-percentage] (enlive/content (str (:progress goal)))
+                    [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))
+                    ))
 
 (enlive/defsnippet goal-form-snippet "public/templates/bootstrap.html" [:#goal-form]
   [])
@@ -205,14 +205,15 @@
    ;;(wrap-error-handling (constantly (r/response "ERROR!")))
    ))
 
-(def app-port (or (Integer. (env :port)) 3000))
+(def app-port (Integer. (or (env :port) "3000" )))
 (def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))
 
 (def mongo (.start (db/new-mongo-db mongo-uri)))
 (def clock (clock/new-joda-clock))
-(def twauth (.start (oauth/new-twitter-oauth (env :twitter-key) (env :twitter-secret)))
-  ;(oauth/new-stub-twitter-oauth {:name "John" :id 123 :screen_name "johncowie"})
-  )
+(def twauth
+  (if (= (env :environment) "dev")
+    (oauth/new-stub-twitter-oauth {:name "John" :id 123 :screen_name "johncowie"})
+    (.start (oauth/new-twitter-oauth (env :twitter-key) (env :twitter-secret)))))
 
 (def app (make-app (scenic-handler routes (route-handlers mongo clock twauth) not-found-handler)))
 
