@@ -200,7 +200,6 @@
 (defn make-app [handler]
   (->
    handler
-   request-printer
    site
    ;;(wrap-error-handling (constantly (r/response "ERROR!")))
    ))
@@ -210,7 +209,7 @@
 
 (def mongo (.start (db/new-mongo-db mongo-uri)))
 (def clock (clock/new-joda-clock))
-(def twauth (oauth/new-twitter-oauth (env :twitter-key) (env :twitter-secret))
+(def twauth (.start (oauth/new-twitter-oauth (env :twitter-key) (env :twitter-secret)))
   ;(oauth/new-stub-twitter-oauth {:name "John" :id 123 :screen_name "johncowie"})
   )
 
