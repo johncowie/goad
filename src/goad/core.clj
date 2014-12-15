@@ -22,8 +22,8 @@
 (defn save-event! [r db]
   (prn (str "Adding: " r))
   (db/save! db "events" r))
-(defn load-goals [db] (db/query db "goals" {}))
-(defn load-events [db] (db/query db "events" {}))
+(defn load-goals [db user-id] (db/query db "goals" {:user-id user-id}))
+(defn load-events [db user-id] (db/query db "events" {:user-id user-id}))
 
 ;; DATA PROCESSING
 
@@ -115,6 +115,7 @@
      (update-in [:target] #(Integer. %))
      (update-in [:time-unit] #(Integer. %))
      (assoc :timestamp (clock/now clock))
+     (assoc :user-id (get-in request [:session :user :id]))
      generate-goal-id
      (save-goal! db))
     (r/redirect (path :index))))
@@ -126,16 +127,16 @@
      (select-keys [:amount :goal-id :comments])
      (update-in [:amount] #(Integer. %))
      (assoc :timestamp (clock/now clock))
+     (assoc :user-id (get-in request [:session :user :id]))
      (save-event! db))
     (r/redirect (path :index))))
 
 (defn main-page [db clock]
   (fn [request]
     (let [user (get-in request [:session :user])
-          goals (load-goals db)
-          events (load-events db)
+          goals (load-goals db (:id user))
+          events (load-events db (:id user))
           stats (stats goals events clock)]
-      (prn goals)
       (html-response (index-page user stats)))))
 
 ;;; AUTH
