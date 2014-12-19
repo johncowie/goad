@@ -22,7 +22,11 @@
 (defn save-event! [r db]
   (prn (str "Adding: " r))
   (db/save! db "events" r))
+(defn update-goal! [r db]
+  (prn (str "Updating: " r))
+  (db/update! db "goals" {:goal-id (:goal-id r)} r))
 (defn load-goals [db user-id] (db/query db "goals" {:user-id user-id}))
+(defn load-goal [db user-id goal-id] (first (db/query db "goals" {:user-id user-id :goal-id goal-id})))
 (defn load-events [db user-id] (db/query db "events" {:user-id user-id}))
 
 ;; DATA PROCESSING
@@ -74,13 +78,24 @@
   (enlive/clone-for [goal goals]
                     [:.goal-row :.hidden-goal-id] (enlive/set-attr :value (:goal-id goal))
                     [:.goal-row :.goal-done-so-far] (enlive/content (str (:total-done goal)))
-                    [:.goal-row :.goal-name] (enlive/content (:name goal))
+                    [:.goal-row :.goal-name :a] (enlive/content (:name goal))
+                    [:.goal-row :.goal-name :a]
+                    (enlive/set-attr :href (path :edit-goal-form :goal (:goal-id goal)))
                     [:.goal-row :.goal-target] (enlive/content (goal-unit-test goal))
                     [:.goal-row :.progress-percentage] (enlive/content (str (:progress goal)))
-                    [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))))
+                    [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))
+                    [:.goal-row :form] (enlive/set-attr :action (path :add-event))
+                    ))
 
 (enlive/defsnippet goal-form-snippet "public/templates/bootstrap.html" [:#goal-form]
-  [])
+  [goal action]
+  [:#name] (enlive/set-attr :value (:name goal))
+  [:#target] (enlive/set-attr :value (str (:target goal)))
+  [:#unit] (enlive/set-attr :value (str (:unit goal)))
+  [:form.add-goal] (enlive/set-attr :action action)
+  [:form.add-goal :button] (enlive/content (if goal "Edit" "Add"))
+  ;; TODO if goal is present use to update values of form
+  )
 
 (enlive/deftemplate index-template "public/templates/bootstrap.html" [user snip]
   [:title] (enlive/content "Goad")
@@ -93,7 +108,10 @@
   (reduce str (index-template user snippet)))
 
 (defn index-page [user goals]
-  (page user [(habits-snippet goals) (goal-form-snippet)]))
+  (page user [(habits-snippet goals) (goal-form-snippet nil (path :add-goal))]))
+
+(defn edit-goal-page [user goal]
+  (page user [(goal-form-snippet goal (path :edit-goal :goal (:goal-id goal)))]))
 
 (defn login-page []
   (page nil (login-snippet)))
@@ -123,6 +141,29 @@
      generate-goal-id
      (save-goal! db))
     (r/redirect (path :index))))
+
+(defn edit-goal [db]
+  (fn [request]
+    (let [user-id (get-in request [:session :user :id])
+          goal-id (get-in request [:params :goal])
+          existing-goal (load-goal db user-id goal-id)]
+      (-> request
+          :params
+          (select-keys [:name :target :unit :time-unit])
+          (update-in [:target] #(Integer. %))
+          (update-in [:time-unit] #(Integer. %))
+          (merge (select-keys existing-goal [:timestamp :user-id :goal-id]))
+          (update-goal! db)))
+    (r/redirect (path :index))))
+
+(-> {} (merge (select-keys {:a 1 :b 2} [:a])))
+
+(defn edit-goal-form [db]
+  (fn [request]
+    (let [user (get-in request [:session :user])
+          goal-id (get-in request [:params :goal])]
+      (when-let [goal (load-goal db (:id user) goal-id)]
+        (html-response (edit-goal-page user goal))))))
 
 (defn add-event [db clock]
   (fn [request]
@@ -187,6 +228,8 @@
   {:index (secure (main-page db clock))
    :add-goal (secure (add-goal db clock))
    :add-event (secure (add-event db clock))
+   :edit-goal-form (secure (edit-goal-form db))
+   :edit-goal (secure (edit-goal db))
    :twitter-callback (twitter-callback twitter-auth)
    :login-form login-form
    :login (login twitter-auth)
