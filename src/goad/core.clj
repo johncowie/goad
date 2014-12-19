@@ -12,6 +12,7 @@
             [net.cgrand.enlive-html :as enlive]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
+            [clj-time.format :as tf]
             ))
 
 ;;; DATABASE
@@ -93,28 +94,56 @@
   [:#target] (enlive/set-attr :value (str (:target goal)))
   [:#unit] (enlive/set-attr :value (str (:unit goal)))
   [:form.add-goal] (enlive/set-attr :action action)
-  [:form.add-goal :button] (enlive/content (if goal "Edit" "Add"))
-  ;; TODO if goal is present use to update values of form
-  )
+  [:form.add-goal :button] (enlive/content (if goal "Edit" "Add")))
 
-(enlive/deftemplate index-template "public/templates/bootstrap.html" [user snip]
+(def event-date-format (tf/formatter "HH:mm dd/MM/yyyy"))
+
+(defn format-timestamp [timestamp formatter]
+  (->> (tc/from-long timestamp)
+       (tf/unparse formatter)))
+
+(defn sort-events [events]
+  (reverse (sort-by :timestamp events)))
+
+(enlive/defsnippet event-list-snippet "public/templates/bootstrap.html" [:#events]
+  [events goal-id->name-map]
+  [:.event-row]
+  (enlive/clone-for [event (sort-events events)]
+                    [:.event-time] (enlive/content (-> (:timestamp event) (format-timestamp event-date-format)))
+                    [:.event-goal] (enlive/content (get goal-id->name-map (:goal-id event)))
+                    [:.event-done] (enlive/content (str (:amount event)))
+                    [:.event-comments] (enlive/content (str (:comments event)))))
+
+(enlive/deftemplate index-template "public/templates/bootstrap.html" [context user snip]
   [:title] (enlive/content "Goad")
   [:#content] (enlive/content snip)
   [:#navigation-login :a] (enlive/content (if user (str "Logout, " (:name user)) "Login"))
   [:#navigation-login :a] (enlive/set-attr :href (if user (path :logout) (path :login-form)))
+  [:.index-nav-link :a] (enlive/set-attr :href (path :index))
+  [:.index-nav-link] (if (= context :index) (enlive/add-class "active") (enlive/remove-class "active"))
+  [:.events-nav-link :a] (enlive/set-attr :href (path :event-list))
+  [:.events-nav-link] (if (= context :event-list) (enlive/add-class "active") (enlive/remove-class "active"))
   )
 
-(defn page [user snippet]
-  (reduce str (index-template user snippet)))
+(defn page [context user snippet]
+  (reduce str (index-template context user snippet)))
+
+;; PAGES
 
 (defn index-page [user goals]
-  (page user [(habits-snippet goals) (goal-form-snippet nil (path :add-goal))]))
+  (page :index user [(habits-snippet goals) (goal-form-snippet nil (path :add-goal))]))
+
+(defn goal-id->name-map [goals]
+  (into {} (map (juxt :goal-id :name) goals)))
+
+(defn event-list-page [user events goals]
+  (page :event-list user (event-list-snippet events (goal-id->name-map goals))))
 
 (defn edit-goal-page [user goal]
-  (page user [(goal-form-snippet goal (path :edit-goal :goal (:goal-id goal)))]))
+  (page nil user (goal-form-snippet goal (path :edit-goal :goal (:goal-id goal)))))
 
 (defn login-page []
-  (page nil (login-snippet)))
+  (page nil nil (login-snippet)))
 
 ;; HANDLERS
 
@@ -176,6 +205,13 @@
      (save-event! db))
     (r/redirect (path :index))))
 
+(defn event-list [db]
+  (fn [request]
+    (let [user (get-in request [:session :user])
+          goals (load-goals db (:id user))
+          events (load-events db (:id user))]
+      (html-response (event-list-page user events goals)))))
+
 (defn main-page [db clock]
   (fn [request]
     (let [user (get-in request [:session :user])
@@ -220,14 +256,18 @@
 
 (defn secure [handler]
   (fn [request]
-    (if (get-in request [:session :user])
-      (handler request)
-      (r/redirect (path :login-form)))))
+    (cond (get-in request [:session :user])
+          (handler request)
+          (= (env :environment) "dev")
+          (-> request (assoc-in [:session :user] {:id 123 :name "John" :screen_name "john"}) handler)
+          :else
+          (r/redirect (path :login-form)))))
 
 (defn route-handlers [db clock twitter-auth]
   {:index (secure (main-page db clock))
    :add-goal (secure (add-goal db clock))
    :add-event (secure (add-event db clock))
+   :event-list (secure (event-list db))
    :edit-goal-form (secure (edit-goal-form db))
    :edit-goal (secure (edit-goal db))
    :twitter-callback (twitter-callback twitter-auth)

@@ -5,6 +5,8 @@ GET  /logout                    logout
 GET  /callback                  twitter-callback
 
 POST /goals/add                 add-goal
-POST /events/add                add-event
 GET  /goals/:goal/edit          edit-goal-form
 POST /goals/:goal/edit          edit-goal
+
+GET  /events                    event-list
+POST /events/add                add-event
