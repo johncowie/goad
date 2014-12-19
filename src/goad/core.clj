@@ -70,19 +70,28 @@
 
 (def time-units {1 "day" 7 "week" 28 "month"})
 
-(defn goal-unit-test [{:keys [target unit time-unit]}]
+(defn goal-unit-text [{:keys [target unit time-unit]}]
   (format "%s %s per %s" target unit (time-units time-unit)))
+
+(defn compare-desc [a b]
+  (* -1 (compare a b)))
+
+(defn sort-events [events]
+  (sort-by :timestamp compare-desc events))
+
+(defn sort-goals [goals]
+  (sort-by :progress goals))
 
 (enlive/defsnippet habits-snippet "public/templates/bootstrap.html" [:#habits]
   [goals]
   [:.goal-row]
-  (enlive/clone-for [goal goals]
+  (enlive/clone-for [goal (sort-goals goals)]
                     [:.goal-row :.hidden-goal-id] (enlive/set-attr :value (:goal-id goal))
                     [:.goal-row :.goal-done-so-far] (enlive/content (str (:total-done goal)))
                     [:.goal-row :.goal-name :a] (enlive/content (:name goal))
                     [:.goal-row :.goal-name :a]
                     (enlive/set-attr :href (path :edit-goal-form :goal (:goal-id goal)))
-                    [:.goal-row :.goal-target] (enlive/content (goal-unit-test goal))
+                    [:.goal-row :.goal-target] (enlive/content (goal-unit-text goal))
                     [:.goal-row :.progress-percentage] (enlive/content (str (:progress goal)))
                     [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))
                     [:.goal-row :form] (enlive/set-attr :action (path :add-event))
@@ -101,9 +110,6 @@
 (defn format-timestamp [timestamp formatter]
   (->> (tc/from-long timestamp)
        (tf/unparse formatter)))
-
-(defn sort-events [events]
-  (reverse (sort-by :timestamp events)))
 
 (enlive/defsnippet event-list-snippet "public/templates/bootstrap.html" [:#events]
   [events goal-id->name-map]
