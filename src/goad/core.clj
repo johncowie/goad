@@ -229,11 +229,14 @@
 ;;; AUTH
 
 (defn absolute-url-from-request [request relative-url]
-  (format "%s://%s%s%s"
-          (name (request :scheme))
-          (:server-name request)
-          (if (= (:server-port request) 80) "" (str ":" (:server-port request)))
-          relative-url))
+  (if (s/blank? (env :app-url))
+    (format "%s://%s%s%s"
+            (name (request :scheme))
+            (:server-name request)
+            (if (= (:server-port request) 80) "" (str ":" (:server-port request)))
+            relative-url)
+    (env :app-url)
+    ))
 
 (defn login-form [request]
   (html-response (login-page)))
