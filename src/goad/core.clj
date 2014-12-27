@@ -1,4 +1,5 @@
 (ns goad.core
+  (:gen-class)
   (:require [thingies.db.document :as db]
             [thingies.clock :as clock]
             [thingies.oauth.twitter :as oauth]
@@ -12,8 +13,7 @@
             [net.cgrand.enlive-html :as enlive]
             [clj-time.core :as t]
             [clj-time.coerce :as tc]
-            [clj-time.format :as tf]
-            ))
+            [clj-time.format :as tf]))
 
 ;;; DATABASE
 
