@@ -235,7 +235,7 @@
             (:server-name request)
             (if (= (:server-port request) 80) "" (str ":" (:server-port request)))
             relative-url)
-    (env :app-url)
+    (str (env :app-url) relative-url)
     ))
 
 (defn login-form [request]
