@@ -52,7 +52,7 @@
 
 (defn calculate-percentage-done [goal]
   (let [{:keys [required total-done]} goal]
-    (assoc goal :progress (* (/ total-done required) 100.0))))
+    (assoc goal :progress (Math/floor (* (/ total-done required) 100.0)))))
 
 (defn stats-for-goal [goal events clock]
   (->
