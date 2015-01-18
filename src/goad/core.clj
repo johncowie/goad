@@ -50,6 +50,13 @@
        (reduce +)
        (assoc goal :total-done)))
 
+(defn min-zero [v] (if (< v 0) 0 v))
+
+(defn calculate-remaining [goal]
+  (->> (- (:required goal) (:total-done goal))
+       min-zero
+       (assoc goal :remaining)))
+
 (defn calculate-percentage-done [goal]
   (let [{:keys [required total-done]} goal]
     (assoc goal :progress (Math/floor (* (/ total-done required) 100.0)))))
@@ -59,6 +66,7 @@
    goal
    (calculate-total-done events)
    (calculate-required clock)
+   calculate-remaining
    calculate-percentage-done))
 
 (defn stats [goals events clock]
@@ -93,7 +101,7 @@
                     (enlive/set-attr :href (path :edit-goal-form :goal (:goal-id goal)))
                     [:.goal-row :.goal-target] (enlive/content (goal-unit-text goal))
                     [:.goal-row :.progress-percentage] (enlive/content (format "%.0f%%" (:progress goal)))
-                    [:.goal-row :.goal-required] (enlive/content (str (int (:required goal))))
+                    [:.goal-row :.goal-required] (enlive/content (str (int (:remaining goal))))
                     [:.goal-row :form] (enlive/set-attr :action (path :add-event))
                     ))
 
