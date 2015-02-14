@@ -54,7 +54,6 @@
 
 (defn calculate-remaining [goal]
   (->> (- (:required goal) (:total-done goal))
-       min-zero
        (assoc goal :remaining)))
 
 (defn calculate-percentage-done [goal]
