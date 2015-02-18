@@ -26,7 +26,12 @@
 (defn update-goal! [r db]
   (prn (str "Updating: " r))
   (db/update! db "goals" {:goal-id (:goal-id r)} r))
-(defn load-goals [db user-id] (db/query db "goals" {:user-id user-id}))
+(defn load-goals [db user-id]
+  (->>
+   (db/query db "goals" {:user-id user-id})
+   (remove :hidden)
+   )
+  )
 (defn load-goal [db user-id goal-id] (first (db/query db "goals" {:user-id user-id :goal-id goal-id})))
 (defn load-events [db user-id] (db/query db "events" {:user-id user-id}))
 
@@ -110,7 +115,11 @@
   [:#target] (enlive/set-attr :value (str (:target goal)))
   [:#unit] (enlive/set-attr :value (str (:unit goal)))
   [:form.add-goal] (enlive/set-attr :action action)
-  [:form.add-goal :button] (enlive/content (if goal "Edit" "Add")))
+  [:form.add-goal :button] (enlive/content (if goal "Edit" "Add"))
+  [:form.hide-goal :button] (enlive/content "Hide")
+  [:form.hide-goal] (enlive/set-attr :action (path :hide-goal :goal (:goal-id goal "")))
+  [:form.hide-goal] (if goal identity nil)
+  )
 
 (def event-date-format (tf/formatter "HH:mm dd/MM/yyyy"))
 
@@ -135,8 +144,7 @@
   [:.index-nav-link :a] (enlive/set-attr :href (path :index))
   [:.index-nav-link] (if (= context :index) (enlive/add-class "active") (enlive/remove-class "active"))
   [:.events-nav-link :a] (enlive/set-attr :href (path :event-list))
-  [:.events-nav-link] (if (= context :event-list) (enlive/add-class "active") (enlive/remove-class "active"))
-  )
+  [:.events-nav-link] (if (= context :event-list) (enlive/add-class "active") (enlive/remove-class "active")))
 
 (defn page [context user snippet]
   (reduce str (index-template context user snippet)))
@@ -198,7 +206,15 @@
           (update-goal! db)))
     (r/redirect (path :index))))
 
-(-> {} (merge (select-keys {:a 1 :b 2} [:a])))
+(defn hide-goal [db]
+  (fn [request]
+    (let [user-id (get-in request [:session :user :id])
+          goal-id (get-in request [:params :goal])
+          existing-goal (load-goal db user-id goal-id)]
+      (-> existing-goal
+          (assoc-in [:hidden] true)
+          (update-goal! db)))
+    (r/redirect (path :index))))
 
 (defn edit-goal-form [db]
   (fn [request]
@@ -286,6 +302,7 @@
    :event-list (secure (event-list db))
    :edit-goal-form (secure (edit-goal-form db))
    :edit-goal (secure (edit-goal db))
+   :hide-goal (secure (hide-goal db))
    :twitter-callback (twitter-callback twitter-auth)
    :login-form login-form
    :login (login twitter-auth)

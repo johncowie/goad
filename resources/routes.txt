@@ -8,5 +8,7 @@ POST /goals/add                 add-goal
 GET  /goals/:goal/edit          edit-goal-form
 POST /goals/:goal/edit          edit-goal
 
+POST /goals/:goal/hide          hide-goal
+
 GET  /events                    event-list
 POST /events/add                add-event
