@@ -2,6 +2,8 @@
 /lib
 /classes
 /checkouts
+.idea
+*.iml
 pom.xml
 pom.xml.asc
 *.jar
@@ -10,3 +12,4 @@ pom.xml.asc
 .lein-failures
 .lein-plugins
 .lein-repl-history
+.nrepl-port
