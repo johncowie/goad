@@ -75,8 +75,7 @@
   (->
     handler
     site
-    ;;(wrap-error-handling (constantly (r/response "ERROR!")))
-    ))
+    (wrap-error-handling (constantly (r/response "ERROR!")))))
 
 (def app-port (Integer. (or (env :port) "3000")))
 (def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))

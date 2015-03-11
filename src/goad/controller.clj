@@ -70,7 +70,7 @@
     (-> request
         :params
         (select-keys [:amount :goal-id :comments])
-        (update-in [:amount] #(Integer. %))
+        (update-in [:amount] #(Double. %))
         (assoc :timestamp (clock/now clock))
         (assoc :user-id (get-in request [:session :user :id]))
         (db/save-event! db))
