@@ -71,11 +71,15 @@
   (fn [r] (prn r)
     (handler r)))
 
+(defn error-handler [request]
+  (.printStackTrace (:exception request))
+  (r/response "ERROR!"))
+
 (defn make-app [handler]
   (->
     handler
     site
-    (wrap-error-handling (constantly (r/response "ERROR!")))))
+    (wrap-error-handling error-handler)))
 
 (def app-port (Integer. (or (env :port) "3000")))
 (def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))
