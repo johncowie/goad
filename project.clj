@@ -17,6 +17,7 @@
                    :plugins [[lein-ring "0.8.11"]
                              [lein-midje "3.1.1"]]}}
   :main goad.core
+  :aot :all
   :ring {:handler goad.core/app
          :reload-paths ["src" "resources"]}
   )
