@@ -27,13 +27,13 @@
                    [:.goal-row]
                    (enlive/clone-for [goal (sort-goals goals)]
                                      [:.goal-row :.hidden-goal-id] (enlive/set-attr :value (:goal-id goal))
-                                     [:.goal-row :.goal-done-so-far] (enlive/content (format "%.2f" (:total-done goal)))
+                                     [:.goal-row :.goal-done-so-far] (enlive/content (format "%.2f" (float (:total-done goal))))
                                      [:.goal-row :.goal-name :a] (enlive/content (:name goal))
                                      [:.goal-row :.goal-name :a]
                                      (enlive/set-attr :href (path :edit-goal-form :goal (:goal-id goal)))
                                      [:.goal-row :.goal-target] (enlive/content (goal-unit-text goal))
                                      [:.goal-row :.progress-percentage] (enlive/content (format "%.0f%%" (:progress goal)))
-                                     [:.goal-row :.goal-required] (enlive/content (format "%.2f" (:remaining goal)))
+                                     [:.goal-row :.goal-required] (enlive/content (format "%.2f" (float (:remaining goal))))
                                      [:.goal-row :form] (enlive/set-attr :action (path :add-event))
                                      ))
 
