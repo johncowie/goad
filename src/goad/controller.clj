@@ -80,9 +80,8 @@
   (fn [request]
     (let [user (get-in request [:session :user])
           goals (db/load-goals db (:id user))
-          events (db/load-events db (:id user))
-          reduced-events (take 25 events)]
-      (html-response (v/event-list-page user reduced-events goals)))))
+          events (db/load-events db (:id user))]
+      (html-response (v/event-list-page user events goals)))))
 
 (defn main-page [db clock]
   (fn [request]
