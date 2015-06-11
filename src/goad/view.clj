@@ -58,7 +58,7 @@
 (enlive/defsnippet event-list-snippet "public/templates/bootstrap.html" [:#events]
                    [events goal-id->name-map]
                    [:.event-row]
-                   (enlive/clone-for [event (take 25 (sort-events events))]
+                   (enlive/clone-for [event (take 100 (sort-events events))]
                                      [:.event-time] (enlive/content (-> (:timestamp event) (format-timestamp event-date-format)))
                                      [:.event-goal] (enlive/content (get goal-id->name-map (:goal-id event)))
                                      [:.event-done] (enlive/content (str (:amount event)))
