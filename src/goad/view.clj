@@ -62,7 +62,9 @@
                                      [:.event-time] (enlive/content (-> (:timestamp event) (format-timestamp event-date-format)))
                                      [:.event-goal] (enlive/content (get goal-id->name-map (:goal-id event)))
                                      [:.event-done] (enlive/content (str (:amount event)))
-                                     [:.event-comments] (enlive/content (str (:comments event)))))
+                                     [:.event-comments] (enlive/content (str (:comments event)))
+                                     [:.hidden-event-id] (enlive/set-attr :value (str (:_id event)))
+                                     ))
 
 (enlive/deftemplate index-template "public/templates/bootstrap.html" [context user snip]
                     [:title] (enlive/content "Goad")

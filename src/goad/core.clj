@@ -82,7 +82,7 @@
     (wrap-error-handling err-handler)))
 
 (def app-port (Integer. (or (env :port) "3000")))
-(def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))
+(def mongo-uri (or (env :mongo-uri) "mongodb://localhost:27017/goad"))  
 
 (def mongo (db/start-db! mongo-uri))
 (def clock (clock/new-joda-clock))

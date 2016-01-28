@@ -12,3 +12,5 @@ POST /goals/:goal/hide          hide-goal
 
 GET  /events                    event-list
 POST /events/add                add-event
+
+POST /events/delete             delete-event

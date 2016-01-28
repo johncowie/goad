@@ -7,6 +7,7 @@
                  [ring "1.3.1"]
                  [scenic "0.2.1"]
                  [johncowie/thingies "0.1.3"]
+                 [com.novemberain/monger "3.0.2"]
                  [clj-time "0.8.0"]
                  [environ "1.0.0"]
                  [enlive "1.1.5"]

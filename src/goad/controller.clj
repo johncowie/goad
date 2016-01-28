@@ -76,6 +76,13 @@
         (db/save-event! db))
     (r/redirect (path :index))))
 
+(defn delete-event [db]
+  (fn [request]
+      (let [id (get-in request [:params :event-id])]
+        (db/delete-event! id db)
+        (r/redirect (path :event-list))
+        )))
+
 (defn event-list [db]
   (fn [request]
     (let [user (get-in request [:session :user])
@@ -108,6 +115,7 @@
     {:index          (main-page db clock)
      :add-goal       (add-goal db clock)
      :add-event      (add-event db clock)
+     :delete-event   (delete-event db)
      :event-list     (event-list db)
      :edit-goal-form (edit-goal-form db)
      :edit-goal      (edit-goal db)

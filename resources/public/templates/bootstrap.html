@@ -95,6 +95,12 @@
               <td class="event-goal">Reading</td>
               <td class="event-done">20</td>
               <td class="event-comments">I read a ton of books today</td>
+              <td class="event-delete">
+                <form method="POST" action="/events/delete">
+                  <input type="hidden" class="hidden-event-id" name="event-id" value="blah"/>
+                  <button class="btn btn-danger">Delete</button>
+                </form>
+              </td>
             </tr>
           </table>
         </div>
