@@ -26,7 +26,7 @@
     (-> request
         :params
         (select-keys [:name :target :unit :time-unit])
-        (update-in [:target] #(Integer. %))
+        (update-in [:target] #(Double. %))
         (update-in [:time-unit] #(Integer. %))
         (assoc :timestamp (clock/now clock))
         (assoc :user-id (get-in request [:session :user :id]))
@@ -42,7 +42,7 @@
       (-> request
           :params
           (select-keys [:name :target :unit :time-unit])
-          (update-in [:target] #(Integer. %))
+          (update-in [:target] #(Double. %))
           (update-in [:time-unit] #(Integer. %))
           (merge (select-keys existing-goal [:timestamp :user-id :goal-id]))
           (db/update-goal! db)))
